@@ -5,23 +5,28 @@ from sklearn import metrics
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import cycle
+import cv2
+import random
+from matplotlib import cm
+from matplotlib import colors
 
 
-
-
-def tf_image_to_points(image):
+def tf_image_to_points(inp_image):
+    f, ax = plt.subplots()
+    image = cv2.resize(inp_image,(100,100))
     print (image.shape)
-    indices = np.where(image > [10])
-    coordinates = zip(indices[1], -indices[0])
-    print (len(coordinates))
-    plt.subplot(1,2,1)
+    indices = np.where(image > [200])
+    (H, W) = image.shape[:2]
+    coordinates_raw = zip(indices[1]/float(W), -indices[0]/float(H))
+    coordinates = coordinates_raw
+    #coordinates = random.sample(coordinates_raw, 2000)
+
+    print ('[INFO] Reduction Fraction: = {0}%'.format(100.0*len(coordinates)/ len(coordinates_raw)))
+    print ('[INFO] Input size = {0}'.format(len(coordinates)))
+    plt.subplot(1,1,1)
     plt.imshow(image)
-    plt.subplot(1,2,2)
-    plt.scatter(indices[1],-indices[0])
 
-
-
-    af = AffinityPropagation(preference=-100, damping=0.9).fit(coordinates)
+    af = AffinityPropagation(damping=0.5).fit(coordinates)
     cluster_centers_indices = af.cluster_centers_indices_
     labels = af.labels_
 
@@ -31,14 +36,19 @@ def tf_image_to_points(image):
 
     print('Estimated number of clusters: %d' % n_clusters_)
     # Plot result
+    cmap = cm.rainbow(np.linspace(0,1,n_clusters_))
 
-    colors = cycle('bgrcmykbgrcmykbgrcmykbgrcmyk')
-    for k, col in zip(range(n_clusters_), colors):
+    for k in range(n_clusters_):
+        col = colors.to_hex(cmap[k])
+        #col = 'r'
         class_members = labels == k
         cluster_center = coordinates[cluster_centers_indices[k]]
-        plt.plot(cluster_center[0], cluster_center[1], 'o', markerfacecolor=col,
+        print (col)
+        plt.plot(cluster_center[0]*W, -cluster_center[1]*H, 'o', markerfacecolor=col,
                  markeredgecolor='k', markersize=14)
         for i,x in enumerate(coordinates):
-            if k==labels[i]: plt.plot([cluster_center[0], x[0]], [cluster_center[1], x[1]],col)
+            if k==labels[i]:
+                print (col)
+                plt.plot([cluster_center[0]*W, x[0]*W], [-cluster_center[1]*H, -x[1]*H],col)
 
     plt.show()

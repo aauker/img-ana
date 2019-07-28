@@ -12,8 +12,6 @@ import detect_clusters_image
 import h5py
 
 
-
-
 def auto_canny(image, sigma=0.33):
 	# compute the median of the single channel pixel intensities
 	v = np.median(image)
@@ -26,10 +24,10 @@ def auto_canny(image, sigma=0.33):
 	# return the edged image
 	return edged
 
-resize=True
+resize=False
 
 raw_image = cv2.imread('./images/NSCLC_8-Plex_WSI_Ultivue.jpg')
-if resize: raw_image = cv2.resize(raw_image,(100,100))
+if resize: raw_image = cv2.resize(raw_image,(200,200))
 raw_image = cv2.cvtColor(raw_image, cv2.COLOR_BGR2RGB)
 hsv_image = cv2.cvtColor(raw_image, cv2.COLOR_RGB2HSV)
 
