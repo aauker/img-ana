@@ -13,7 +13,7 @@ from matplotlib import colors
 
 def tf_image_to_points(inp_image):
     f, ax = plt.subplots()
-    image = cv2.resize(inp_image,(100,100))
+    image = cv2.resize(inp_image,(200,200))
     print (image.shape)
     indices = np.where(image > [200])
     (H, W) = image.shape[:2]
@@ -26,7 +26,7 @@ def tf_image_to_points(inp_image):
     plt.subplot(1,1,1)
     plt.imshow(image)
 
-    af = AffinityPropagation(damping=0.5).fit(coordinates)
+    af = AffinityPropagation(preference=-2, damping=0.8).fit(coordinates)
     cluster_centers_indices = af.cluster_centers_indices_
     labels = af.labels_
 
@@ -39,16 +39,15 @@ def tf_image_to_points(inp_image):
     cmap = cm.rainbow(np.linspace(0,1,n_clusters_))
 
     for k in range(n_clusters_):
+        print ('[INFO] Plotting cluster {0}'.format(k))
+
         col = colors.to_hex(cmap[k])
-        #col = 'r'
         class_members = labels == k
         cluster_center = coordinates[cluster_centers_indices[k]]
-        print (col)
         plt.plot(cluster_center[0]*W, -cluster_center[1]*H, 'o', markerfacecolor=col,
                  markeredgecolor='k', markersize=14)
         for i,x in enumerate(coordinates):
             if k==labels[i]:
-                print (col)
                 plt.plot([cluster_center[0]*W, x[0]*W], [-cluster_center[1]*H, -x[1]*H],col)
 
     plt.show()

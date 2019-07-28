@@ -76,7 +76,11 @@ print ('Mask 4 Completed')
 result5 = cv2.bitwise_and(raw_image, raw_image, mask=mask5)
 print ('Mask 5 Completed')
 
+detect_clusters_image.tf_image_to_points(result1)
+detect_clusters_image.tf_image_to_points(result2)
+detect_clusters_image.tf_image_to_points(result3)
 detect_clusters_image.tf_image_to_points(result4)
+detect_clusters_image.tf_image_to_points(result5)
 
 segment_scale_factor = 20
 
