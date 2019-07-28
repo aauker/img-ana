@@ -26,7 +26,7 @@ def auto_canny(image, sigma=0.33):
 	# return the edged image
 	return edged
 
-resize=False
+resize=True
 
 raw_image = cv2.imread('./images/NSCLC_8-Plex_WSI_Ultivue.jpg')
 if resize: raw_image = cv2.resize(raw_image,(100,100))
@@ -54,7 +54,7 @@ if resize:
     axis.set_xlabel("Hue")
     axis.set_ylabel("Saturation")
     axis.set_zlabel("Value")
-    plt.show()
+    #plt.show()
 
 mask1 = cv2.inRange(hsv_image, (0, 30, 10), (10, 255, 255))
 mask2 = cv2.inRange(hsv_image, (15, 30, 10), (30, 255, 255))
@@ -78,9 +78,9 @@ print ('Mask 4 Completed')
 result5 = cv2.bitwise_and(raw_image, raw_image, mask=mask5)
 print ('Mask 5 Completed')
 
-print (result5.shape)
+detect_clusters_image.tf_image_to_points(result4)
 
-segment_scale_factor = 10
+segment_scale_factor = 20
 
 hed, canny = detect_edges_image.HED_auto(raw_image,20)
 hed1, canny = detect_edges_image.HED_auto(result1.copy(),segment_scale_factor)

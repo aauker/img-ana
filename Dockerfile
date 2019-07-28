@@ -1,20 +1,72 @@
-# Use an official Python runtime as a parent image
-FROM python:2.7-slim
+FROM python:3.7-alpine
 
-# Set the working directory to /app
-WORKDIR /app
+LABEL MAINTAINER="Andrew Aukerman <ataukerman@gmail.com>"
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Linking of locale.h as xlocale.h
+# This is done to ensure successfull install of python numpy package
+# see https://forum.alpinelinux.org/comment/690#comment-690 for more information.
 
-# Install any needed packages specified in requirements.txt
-# RUN pip install --trusted-host pypi.python.org -r requirements.txt
+WORKDIR /var/www/
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# SOFTWARE PACKAGES
+#   * musl: standard C library
+#   * lib6-compat: compatibility libraries for glibc
+#   * linux-headers: commonly needed, and an unusual package name from Alpine.
+#   * build-base: used so we include the basic development packages (gcc)
+#   * bash: so we can access /bin/bash
+#   * git: to ease up clones of repos
+#   * ca-certificates: for SSL verification during Pip and easy_install
+#   * freetype: library used to render text onto bitmaps, and provides support font-related operations
+#   * libgfortran: contains a Fortran shared library, needed to run Fortran
+#   * libgcc: contains shared code that would be inefficient to duplicate every time as well as auxiliary helper routines and runtime support
+#   * libstdc++: The GNU Standard C++ Library. This package contains an additional runtime library for C++ programs built with the GNU compiler
+#   * openblas: open source implementation of the BLAS(Basic Linear Algebra Subprograms) API with many hand-crafted optimizations for specific processor types
+#   * tcl: scripting language
+#   * tk: GUI toolkit for the Tcl scripting language
+#   * libssl1.0: SSL shared libraries
+ENV PACKAGES="\
+    dumb-init \
+    musl \
+    libc6-compat \
+    linux-headers \
+    build-base \
+    bash \
+    git \
+    ca-certificates \
+    freetype \
+    libgfortran \
+    libgcc \
+    libstdc++ \
+    openblas \
+    tcl \
+    tk \
+    libssl1.0 \
+"
 
-# Define environment variable
-ENV NAME World
+# PYTHON DATA SCIENCE PACKAGES
+#   * numpy: support for large, multi-dimensional arrays and matrices
+#   * matplotlib: plotting library for Python and its numerical mathematics extension NumPy.
+#   * scipy: library used for scientific computing and technical computing
+#   * scikit-learn: machine learning library integrates with NumPy and SciPy
+#   * pandas: library providing high-performance, easy-to-use data structures and data analysis tools
+#   * nltk: suite of libraries and programs for symbolic and statistical natural language processing for English
+ENV PYTHON_PACKAGES="\
+    numpy \
+    matplotlib \
+    scipy \
+    scikit-learn \
+    pandas \
+    nltk \
+"
 
-# Run app.py when the container launches
-CMD ["python", "preprocess.py"]
+RUN apk add --no-cache --virtual build-dependencies python --update py-pip \
+    && apk add --virtual build-runtime \
+    build-base python-dev openblas-dev freetype-dev pkgconfig gfortran \
+    && ln -s /usr/include/locale.h /usr/include/xlocale.h \
+    && pip install --upgrade pip \
+    && pip install --no-cache-dir $PYTHON_PACKAGES \
+    && apk del build-runtime \
+    && apk add --no-cache --virtual build-dependencies $PACKAGES \
+    && rm -rf /var/cache/apk/*
+
+CMD ["python"]
